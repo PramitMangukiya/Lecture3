@@ -1,0 +1,62 @@
+43 VIDEO
+Show databases
+
+// switch to databases
+use PM
+
+db.pm.insertOne({name:"Pramit",type:"backend",subject:"BCA", active:"true"})
+
+show collections
+
+db.pm.find()
+
+
+44 VIDEO 
+db.pm.insertMany([{name:"Pramit",type:"backend",subject:"BCA",video:8,active:"true"},{name:"Ok ",type:"backend",subject:"BCA",video:5,active:"false"}]);
+
+
+45 VIDEO db.collection.find(query,projection)
+1. Find all the result of given collection
+db.pm.find()
+
+2. Show the result in pretty format?
+db.pm.find().pretty()
+
+3. Get only MongoDb data as a output
+db.pm.find({name:"Pramit"})
+
+4. Get only MongoDb data as a output with only name field
+db.pm.find({name:"Pramit"},{name:1})
+
+5. Get only MongoDb data as a output without _id field in it.
+db.pm.find({name:"Pramit"},{_id:0, name:1})
+
+6. set the filter to active:true and get only the first field with active true value.
+db.pm.find({active:"true"}).limit(1)
+
+7. Do the same as 6question but with differnt method.
+db.pm.findOne({active:"true"})
+
+8. Do the same as 6 question but this time, get the 2nd field with actice:true by skipping the 1st field.
+db.pm.find({active:"true"}).limit(1).skip(1)
+
+
+
+46 VIDEO db.collection_name.updateone(<filter>,<Update>)
+db.collection_name.Update(<filter>,<Update>)
+
+
+1. Update the type "react Js" as Ful Stack
+db.pm.updateOne({name:"meet"},  {$set:{type:"Full Stack"}})
+
+2 Update all the fields with the type value = to 'backend' and set  the value to false
+db.pm.updateMany({name:"meet"}, {$set:{active:"False"}})
+
+
+
+
+47 VIDEO db.collection_name.deleteMany(Delletion_critteria)
+
+
+db.pm.updateMany({name:"meet"}, {$set:{active:"False"}})
+db.pm.updateMany({})
