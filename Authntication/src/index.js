@@ -5,7 +5,10 @@ const app = express();
 const ejs = require("ejs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookie = require("cookie");
+const cookieParser = require("cookie-parser");
 require("./db/connect");
+const auth = require("./middleware/auth");
 
 const Register = require("./model/register");
 
@@ -15,11 +18,32 @@ app.use(express.urlencoded({ extended: false }));
 const port = 3000;
 const static_path = path.join(__dirname, "../public");
 app.use(express.static(static_path));
+app.use(cookieParser());
 app.set("view engine", "ejs");
 
 // console.log(process.env.SECRET_KEY);
 app.get("/", (req, res) => {
-  res.render("");
+  res.render("index");
+});
+
+app.get("/about", auth, (req, res) => {
+  res.render("about");
+});
+
+app.get("/logout", auth, async (req, res) => {
+  try {
+    // for single LogOut
+    req.user.tokens = req.user.tokens.filter((currentElement)=>{
+      return currentElement.token != req.token;
+    })
+    // req.user.tokens = [];
+    res.clearCookie("jwt");
+    console.log("LogOut SuccessFully");
+    await req.user.save();
+    res.render("login");
+  } catch (error) {
+    res.status(500).send(error);
+  }
 });
 
 app.get("/login", (req, res) => {
@@ -33,8 +57,16 @@ app.post("/login", async (req, res) => {
     const useremail = await Register.findOne({ email: email });
     const isMatch = bcrypt.compare(password, useremail.password);
     const token = await useremail.generateAuthToken();
-    // console.log("token" + token);
 
+    res.cookie("jwt", token, {
+      expires: new Date(Date.now() + 30000),
+      httpOnly: true,
+      // secure:true // This Is use only for https use online not offline
+    });
+    // console.log("token" + token);
+    console.log(`This Is The cookie parser ${req.cookies.jwt}`);
+
+    console.log(cookie);
     if (isMatch) {
       res.status(201).render("index");
     } else {
@@ -64,7 +96,14 @@ app.post("/register", async (req, res) => {
       });
 
       const token = await registeremployee.generateAuthToken();
+
+      res.cookie("jwt", token, {
+        expires: new Date(Date.now() + 30000),
+        httpOnly: true,
+      });
+
       const registered = await registeremployee.save();
+
       res.status(201).render("login");
     } else {
       res.send("password are not matching");
