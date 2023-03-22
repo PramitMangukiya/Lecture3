@@ -7,6 +7,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookie = require("cookie");
 const cookieParser = require("cookie-parser");
+const passport = require("passport");
+const cookieSession = require("cookie-session");
+require("./middleware/passport");
 require("./db/connect");
 const auth = require("./middleware/auth");
 
@@ -14,28 +17,58 @@ const Register = require("./model/register");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(
+  cookieSession({
+    name: "google-auth-session",
+    keys: ["key1", "key2"],
+  })
+);
 
 const port = 3000;
 const static_path = path.join(__dirname, "../public");
 app.use(express.static(static_path));
 app.use(cookieParser());
 app.set("view engine", "ejs");
+app.use(passport.initialize());
+app.use(passport.session());
 
 // console.log(process.env.SECRET_KEY);
 app.get("/", (req, res) => {
   res.render("index");
 });
 
-app.get("/about", auth, (req, res) => {
-  res.render("about");
+// Auth
+app.get(
+  "/google",
+  passport.authenticate("google", { scope: ["email", "profile"] })
+);
+
+// Auth Callback
+app.get(
+  "/google/callback",
+  passport.authenticate("google", {
+    successRedirect: "/google/callback/success",
+    failureRedirect: "/google/callback/failure",
+  })
+);
+
+// Success
+app.get("/google/callback/success", (req, res) => {
+  if (!req.user) res.redirect("index");
+  res.send("Welcome " + req.user.email);
+});
+
+// failure
+app.get("/index", (req, res) => {
+  res.send("Error");
 });
 
 app.get("/logout", auth, async (req, res) => {
   try {
     // for single LogOut
-    req.user.tokens = req.user.tokens.filter((currentElement)=>{
+    req.user.tokens = req.user.tokens.filter((currentElement) => {
       return currentElement.token != req.token;
-    })
+    });
     // req.user.tokens = [];
     res.clearCookie("jwt");
     console.log("LogOut SuccessFully");
