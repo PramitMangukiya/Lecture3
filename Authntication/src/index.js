@@ -38,30 +38,28 @@ app.get("/", (req, res) => {
 });
 
 // Auth
-app.get(
-  "/google",
-  passport.authenticate("google", { scope: ["email", "profile"] })
-);
-
-// Auth Callback
-app.get(
-  "/google/callback",
-  passport.authenticate("google", {
-    successRedirect: "/google/callback/success",
-    failureRedirect: "/google/callback/failure",
-  })
-);
-
-// Success
-app.get("/google/callback/success", (req, res) => {
-  if (!req.user) res.redirect("index");
+app.get('/auth' , passport.authenticate('google', { scope:
+  [ 'email', 'profile' ]
+  }));
+   
+  // Auth Callback
+  app.get( '/auth/callback',
+  passport.authenticate( 'google', {
+  successRedirect: '/auth/callback/success',
+  failureRedirect: '/auth/callback/failure'
+  }));
+   
+  // Success
+  app.get('/auth/callback/success' , (req , res) => {
+  if(!req.user)
+  res.redirect('/auth/callback/failure');
   res.send("Welcome " + req.user.email);
-});
-
-// failure
-app.get("/index", (req, res) => {
+  });
+   
+  // failure
+  app.get('/auth/callback/failure' , (req , res) => {
   res.send("Error");
-});
+  })
 
 app.get("/logout", auth, async (req, res) => {
   try {
