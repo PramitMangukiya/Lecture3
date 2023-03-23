@@ -37,6 +37,10 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
+//about
+app.get("/about",(req,res)=>{
+  res.render("about");
+})
 // Auth
 app.get('/auth' , passport.authenticate('google', { scope:
   [ 'email', 'profile' ]

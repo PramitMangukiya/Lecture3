@@ -1,28 +1,26 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const Joi = require("joi");
 const jwt = require("jsonwebtoken");
 
 const employeSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  retype_password: {
-    type: String,
-    required: true,
-  },
-  gender: {
-    type: String,
-    required: true,
-  },
+  name: Joi.string().min(3).max(10).required(),
+  email: Joi.string().email().lowercase().required(),
+  password: Joi.ref("password"),
+  retype_password: Joi.string().min(3).max(10).optional(),
+  gender: Joi.string().valid("activated").valid("unactivated"),
+  // address: {
+  //   state: Joi.string().length(2).reuired(),
+  // },
+  // DOB: Joi.date().greater(new Date("2012-01-01")).required(),
+  //   referred:Joi.boolean().required(),
+  //   referredDetails: Joi.string().when("referred",{
+  //     is : true,
+  //     then:Joi.string().rquired().min(3).max(25),
+  //     otherwise:Joi.string().optional()
+  //   }),
+  //   hobbies: Joi.array().items([Joi.string(),Joi.number()]),
+  //   acceptTos: Joi.boolean().truthy("yes").valid(true).reuired(),
   tokens: [
     {
       token: {
@@ -36,7 +34,7 @@ employeSchema.methods.generateAuthToken = async function () {
   try {
     const token = jwt.sign(
       { _id: this._id.toString() },
-      process.env.SECRET_KEY  
+      process.env.SECRET_KEY
     );
     this.tokens = this.tokens.concat({ token: token });
     console.log(token);
